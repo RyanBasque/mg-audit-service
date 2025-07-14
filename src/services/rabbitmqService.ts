@@ -96,12 +96,11 @@ export class RabbitMQService {
       console.log("Processing audit event:", {
         action: event.action,
         service: event.service,
-        userId: event.data.userId,
+        userId: event.metadata.userId,
       });
 
       // Extrair dados do evento
-      const { action, service, data } = event;
-      const { userId, metadata } = data;
+      const { action, service, metadata } = event;
 
       // Preparar metadata completa com informações adicionais
       const fullMetadata = {
@@ -112,7 +111,7 @@ export class RabbitMQService {
 
       // Salvar no banco de dados
       const auditLog = await this.auditLogService.createAuditLog({
-        userId,
+        userId: event.metadata.userId,
         action,
         service,
         metadata: fullMetadata,
@@ -122,7 +121,7 @@ export class RabbitMQService {
         id: auditLog.id,
         action: auditLog.action,
         service: auditLog.service,
-        userId: auditLog.userId,
+        userId: auditLog?.userId,
       });
     } catch (error) {
       console.error("Error processing audit event:", error);

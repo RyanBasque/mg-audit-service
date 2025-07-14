@@ -2,7 +2,7 @@ export interface EventPayload<T = Record<string, any>> {
   action: string;
   timestamp: string;
   service: string;
-  data: T;
+  metadata: Record<string, any>;
 }
 
 export interface AuditEvent {
