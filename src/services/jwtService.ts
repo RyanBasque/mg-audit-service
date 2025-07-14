@@ -1,14 +1,16 @@
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 
 export class JwtService {
-  private static readonly SECRET = process.env.JWT_SECRET || "fallback-secret";
+  // private static readonly SECRET = process.env.JWT_SECRET || "fallback-secret";
 
   static verifyToken(token: string): any {
-    try {
-      return jwt.verify(token, this.SECRET);
-    } catch (error) {
-      throw new Error("Invalid token");
-    }
+    // TODO: Implementar verificação de token quando necessário
+    // try {
+    //   return jwt.verify(token, this.SECRET);
+    // } catch (error) {
+    //   throw new Error("Invalid token");
+    // }
+    return { userId: "mock-user-id" }; // Mock temporário
   }
 
   static extractUserFromToken(authHeader?: string): { userId?: string } {

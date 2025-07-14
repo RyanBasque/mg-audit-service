@@ -1,0 +1,56 @@
+{
+  "users": [
+    {
+      "name": "rabbitmq_user",
+      "password": "rabbitmq_password",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "rabbitmq_user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "audit.exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "audit.logs",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-max-retries": 3,
+        "x-message-ttl": 60000
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "audit.exchange",
+      "vhost": "/",
+      "destination": "audit.logs",
+      "destination_type": "queue",
+      "routing_key": "audit.*",
+      "arguments": {}
+    }
+  ]
+}

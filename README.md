@@ -53,12 +53,9 @@ NODE_ENV=development
 # Banco de dados
 DB_HOST=localhost
 DB_PORT=5433
-DB_USERNAME=audit_user
-DB_PASSWORD=audit_password
+DB_USERNAME=
+DB_PASSWORD=
 DB_NAME=mg_audit_db
-
-# JWT
-JWT_SECRET=your-secret-key
 
 # RabbitMQ
 RABBITMQ_URL=amqp://localhost
@@ -92,7 +89,6 @@ yarn start
 ```http
 POST /audit/logs
 Content-Type: application/json
-Authorization: Bearer <token> (opcional)
 
 {
   "action": "login",
@@ -151,7 +147,7 @@ O serviço consome eventos de auditoria do exchange `audit.exchange` com routing
 
 ```json
 {
-  "action": "user_login",
+  "action": "login",
   "timestamp": "2025-01-13T10:30:00Z",
   "service": "mg-login-service",
   "data": {

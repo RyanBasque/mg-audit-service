@@ -1,0 +1,127 @@
+version: "3.8"
+
+services:
+  # Serviço de Auditoria
+  mg-audit-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mg-audit-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=audit_user
+      - DB_PASSWORD=audit_password
+      - DB_NAME=mg_audit_db
+      - RABBITMQ_URL=amqp://rabbitmq_user:rabbitmq_password@rabbitmq:5672
+      - AUDIT_EXCHANGE=audit.exchange
+      - AUDIT_QUEUE=audit.logs
+      - AUDIT_ROUTING_KEY=audit.*
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - mg-network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3002/audit/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: mg-audit-postgres
+    environment:
+      - POSTGRES_DB=mg_audit_db
+      - POSTGRES_USER=audit_user
+      - POSTGRES_PASSWORD=audit_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d # Scripts de inicialização
+    networks:
+      - mg-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit_user -d mg_audit_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: mg-audit-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmq_user
+      - RABBITMQ_DEFAULT_PASS=rabbitmq_password
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json # Configurações pré-definidas
+    networks:
+      - mg-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # PgAdmin (Interface web para PostgreSQL) - Opcional para desenvolvimento
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mg-audit-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - mg-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    profiles:
+      - dev # Use docker-compose --profile dev up para incluir este serviço
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  mg-network:
+    driver: bridge
+    name: mg-network

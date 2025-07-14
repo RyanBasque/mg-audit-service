@@ -1,14 +1,15 @@
+import "./alias"; // Configurar aliases de módulo primeiro
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { useExpressServer } from "routing-controllers";
 
-import { AppDataSource } from "@database/data-source";
+import { AppDataSource } from "./database/data-source";
 
-import { RabbitMQService } from "@services/rabbitmqService";
+import { RabbitMQService } from "./services/rabbitmqService";
 
-import { AuditController } from "@controllers/auditController";
+import { AuditController } from "./controllers/auditController";
 
 dotenv.config();
 
