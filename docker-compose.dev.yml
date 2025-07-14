@@ -38,19 +38,20 @@ services:
     image: postgres:15-alpine
     container_name: mg-audit-postgres-dev
     environment:
-      - POSTGRES_DB=mg_audit_db
-      - POSTGRES_USER=audit_user
-      - POSTGRES_PASSWORD=audit_password
+      - POSTGRES_DB=mg_gateway_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     ports:
       - "5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
     networks:
       - mg-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U audit_user -d mg_audit_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mg_gateway_db"]
       interval: 10s
       timeout: 5s
       retries: 5

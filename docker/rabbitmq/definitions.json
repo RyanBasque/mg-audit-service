@@ -29,11 +29,30 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+    {
+      "name": "login.exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "queues": [
     {
       "name": "audit.logs",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-max-retries": 3,
+        "x-message-ttl": 60000
+      }
+    },
+    {
+      "name": "login.events",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -50,6 +69,22 @@
       "destination": "audit.logs",
       "destination_type": "queue",
       "routing_key": "audit.*",
+      "arguments": {}
+    },
+    {
+      "source": "login.exchange",
+      "vhost": "/",
+      "destination": "login.events",
+      "destination_type": "queue",
+      "routing_key": "login.*",
+      "arguments": {}
+    },
+    {
+      "source": "audit.exchange",
+      "vhost": "/",
+      "destination": "audit.logs",
+      "destination_type": "queue",
+      "routing_key": "login.*",
       "arguments": {}
     }
   ]

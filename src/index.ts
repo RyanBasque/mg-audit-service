@@ -62,6 +62,13 @@ async function startServer() {
     await AppDataSource.initialize();
     console.log("Database connected successfully");
 
+    // Executar migrações se não estiver em modo development
+    if (process.env.NODE_ENV !== "development") {
+      console.log("Running database migrations...");
+      await AppDataSource.runMigrations();
+      console.log("Database migrations completed successfully!");
+    }
+
     // Conectar ao RabbitMQ
     console.log("Connecting to RabbitMQ...");
     await RabbitMQService.connect();
